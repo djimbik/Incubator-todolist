@@ -1,4 +1,4 @@
-import React, {ChangeEvent, FC, KeyboardEventHandler, useState} from "react";
+import React, {ChangeEvent, ChangeEventHandler, FC, KeyboardEventHandler, useState} from "react";
 import {FilterValuesType} from "./App";
 
 export type TaskType = {
@@ -14,6 +14,8 @@ type TodolistPropsType = { // это не объект, а тип данных, 
     removeTask: (id: string) => void
     changeFilter: (filter: FilterValuesType) => void
     addTask: (ms: string) => void
+    changeTaskStatus: (id: string, isDone: boolean) => void
+    filter: FilterValuesType
 }
 
 export const Todolist: FC<TodolistPropsType> = ({
@@ -22,17 +24,25 @@ export const Todolist: FC<TodolistPropsType> = ({
                                                     removeTask,
                                                     changeFilter,
                                                     addTask,
+                                                    changeTaskStatus,
+                                                    filter
                                                 }) => {
 
     const tasksJSX: Array<JSX.Element> = tasks.map(item => {
-    const onRemovehandler = () => {
-        removeTask(item.id)
-    }
-        return <li key={item.id}>
+        const onRemovehandler = () => {
+            removeTask(item.id)
+        }
+
+        const onChangeHandler = (event: ChangeEvent<HTMLInputElement>) => {
+            changeTaskStatus(item.id, event.currentTarget.checked)
+        }
+
+        return <li key={item.id}
+                   className={item.isDone ? 'is-done' : ''}>
             {/*// key нужен, чтобы реакт использовал предыдущий стейт и не рисовал заново*/}
             {/*// уже отрисованные части списка при добавлении новых */}
-            <input type="checkbox" checked={item.isDone} readOnly/>
-            <span>{item.title}</span>
+            <input type="checkbox" checked={item.isDone} onChange={onChangeHandler} />
+            <span >{item.title}</span>
             <button onClick={onRemovehandler}>x</button>
         </li>
     }
@@ -40,12 +50,17 @@ export const Todolist: FC<TodolistPropsType> = ({
     )
 
     const [newTaskTitle, setNewTaskTittle] = useState('')
+    const [error, setError] = useState<string | null>(null)
     const addTaskButtonHandler = () => {
+        if (newTaskTitle.trim() === '') {
+            setError('Title is required')
+            return
+        }
         addTask(newTaskTitle)
-        setNewTaskTittle('')
     }
     const onChangeInputHandler = (event: ChangeEvent<HTMLInputElement>) => {
         setNewTaskTittle(event.currentTarget.value)
+        setError(null)
     }
     const onKeyPressHandler = (event: React.KeyboardEvent<HTMLInputElement>) => {
         // Если пользователь нажал Enter, добавляем задачу
@@ -63,16 +78,21 @@ export const Todolist: FC<TodolistPropsType> = ({
             <div>
                 <input value={newTaskTitle}
                        onChange={onChangeInputHandler}
-                       onKeyPress={onKeyPressHandler}/>
+                       onKeyPress={onKeyPressHandler}
+                       className={error ? 'error' : ''}/>
                 <button onClick={addTaskButtonHandler}>+</button>
+                {error && <div className={'error-message'}>{error}</div>}
             </div>
             <ul>
                 {tasksJSX}
             </ul>
             <div>
-                <button onClick={onAllClickFilterHandler}>All</button>
-                <button onClick={onActiveClickHandler}>Active</button>
-                <button onClick={onCompletedClickHandler}>Completed</button>
+                <button className={filter === 'all' ? 'active-filter' : ''}
+                        onClick={onAllClickFilterHandler}>All</button>
+                <button className={filter === 'active' ? 'active-filter' : ''}
+                        onClick={onActiveClickHandler}>Active</button>
+                <button className={filter === 'completed' ? 'active-filter' : ''}
+                        onClick={onCompletedClickHandler}>Completed</button>
             </div>
         </div>
     )

@@ -27,9 +27,19 @@ function App() {
         setTasks(updatedTasks);
     }
 
+    function changeTaskStatus(id: string, isDone: boolean) {
+        setTasks(prevState =>
+            prevState.map(task => {
+                if (task.id === id) {
+                    return {...task, isDone: isDone}
+                }
+                return task;
+            }))
+    }
+
     function addTask(ms:string) {
-        setTasks((prevState) => [...tasks, {id: v1(), title: ms, isDone: false}])
-        console.log('проверка')
+        setTasks((prevState) => [...tasks, {id: v1(), title: ms,
+            isDone: false}])
     }
 
     const getFilteredTasks = (tasks: Array<TaskType>, filter: FilterValuesType) => {
@@ -54,6 +64,8 @@ function App() {
                 title={title}
                 changeFilter={changeFilter}
                 addTask = {addTask}
+                changeTaskStatus={changeTaskStatus}
+                filter = {filter}
                 />
         </div>
     );

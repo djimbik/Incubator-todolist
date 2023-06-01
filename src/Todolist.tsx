@@ -11,11 +11,13 @@ type TodolistPropsType = { // это не объект, а тип данных, 
     // он предоставляет набор свойств с указанными типами
     title: string
     tasks: Array<TaskType>
-    removeTask: (id: string) => void
-    changeFilter: (filter: FilterValuesType) => void
-    addTask: (ms: string) => void
-    changeTaskStatus: (id: string, isDone: boolean) => void
+    removeTask: (id: string, todolistId: string) => void
+    changeFilter: (filter: FilterValuesType, todolistId:string) => void
+    addTask: (ms: string, todolistId: string) => void
+    changeTaskStatus: (id: string, isDone: boolean, todolistId: string) => void
     filter: FilterValuesType
+    id: string
+    removeTodolist: (id: string) => void
 }
 
 export const Todolist: FC<TodolistPropsType> = ({
@@ -25,16 +27,18 @@ export const Todolist: FC<TodolistPropsType> = ({
                                                     changeFilter,
                                                     addTask,
                                                     changeTaskStatus,
-                                                    filter
+                                                    filter,
+                                                    id,
+                                                    removeTodolist
                                                 }) => {
 
     const tasksJSX: Array<JSX.Element> = tasks.map(item => {
         const onRemovehandler = () => {
-            removeTask(item.id)
+            removeTask(item.id, id)
         }
 
         const onChangeHandler = (event: ChangeEvent<HTMLInputElement>) => {
-            changeTaskStatus(item.id, event.currentTarget.checked)
+            changeTaskStatus(item.id, event.currentTarget.checked, id)
         }
 
         return <li key={item.id}
@@ -56,7 +60,7 @@ export const Todolist: FC<TodolistPropsType> = ({
             setError('Title is required')
             return
         }
-        addTask(newTaskTitle)
+        addTask(newTaskTitle, id)
     }
     const onChangeInputHandler = (event: ChangeEvent<HTMLInputElement>) => {
         setNewTaskTittle(event.currentTarget.value)
@@ -68,13 +72,16 @@ export const Todolist: FC<TodolistPropsType> = ({
             addTaskButtonHandler()
         }
     }
-    const onAllClickFilterHandler = () => changeFilter('all');
-    const onActiveClickHandler = () => changeFilter('active');
-    const onCompletedClickHandler = () => changeFilter('completed')
+    const onAllClickFilterHandler = () => changeFilter('all', id);
+    const onActiveClickHandler = () => changeFilter('active', id);
+    const onCompletedClickHandler = () => changeFilter('completed', id);
+    const removeTodolistHandler = () => {
+        removeTodolist(id)
+    }
 
     return (
         <div>
-            <h3>{title}</h3>
+            <h3>{title} <button onClick={removeTodolistHandler}>X</button> </h3>
             <div>
                 <input value={newTaskTitle}
                        onChange={onChangeInputHandler}
